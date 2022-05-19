@@ -4,6 +4,8 @@ a simple tool to test out some SDL2 things, including:
 - rendering text
 - moving graphics
 
+![Screenshot](https://raw.githubusercontent.com/egrath/sdl-graphics/master/sdl-graphics-screenshot.png)
+
 ### Usage
 
 keyboard bindings:
