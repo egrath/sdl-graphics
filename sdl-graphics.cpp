@@ -54,7 +54,16 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("SDL-Graphics", 0, 0, 640, 480, SDL_WINDOW_SHOWN);
+    // Resolution 640x480 per default for windows and fullscreen native for KMSDRM
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0,&displayMode);
+
+    SDL_Window *window = nullptr;
+    if(strcmp(SDL_GetCurrentVideoDriver(),"KMSDRM")==0)
+        window = SDL_CreateWindow("SDL-Graphics", 0, 0, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN);            
+    else
+        window = SDL_CreateWindow("SDL-Graphics", 0, 0, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);    
+
     if(window==nullptr)
     {
         std::cerr << SDL_GetError();
@@ -72,6 +81,8 @@ int main(int argc, char **argv)
         std::cerr << SDL_GetError();
         return -1;
     }
+
+    SDL_ShowCursor(0);
 
     // Get information about the available video drivers and rendererss
     std::cout << "available drivers (compiled in):" << std::endl;
@@ -100,8 +111,7 @@ int main(int argc, char **argv)
     std::cout << "    SDL_RENDER_DRIVER: " << renderDriverText << std::endl;    
     std::cout << std::flush;
 
-    // Set up some things
-    SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
+    // Timer for updating the FPS display    
     SDL_AddTimer(1000, TimerCallback, nullptr);
 
     // Load the sprite
@@ -125,6 +135,8 @@ int main(int argc, char **argv)
     bool fullscreen=false;
     SDL_SetWindowFullscreen(window,(fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
 
+    int cursorX, cursorY;
+
     // Rendering loop
     bool run = true;
     while(run)
@@ -135,6 +147,21 @@ int main(int argc, char **argv)
         {
             switch(event.type)
             {
+                case SDL_MOUSEMOTION:
+                    cursorX=event.motion.x;
+                    cursorY=event.motion.y;
+                    break;
+
+                case SDL_WINDOWEVENT:
+                    switch(event.window.event)
+                    {
+                        case SDL_WINDOWEVENT_RESIZED:
+                            windowWidth=event.window.data1;
+                            windowHeight=event.window.data2;
+                            break;
+                    }
+                    break;
+
                 case SDL_QUIT:
                     run=false;
                     break;
@@ -154,7 +181,7 @@ int main(int argc, char **argv)
                     else if(event.key.keysym.sym==SDLK_f)
                     {
                         fullscreen = !fullscreen;
-                        SDL_SetWindowFullscreen(window,(fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+                        SDL_SetWindowFullscreen(window,(fullscreen ? SDL_WINDOW_FULLSCREEN : 0));                        
                     }
                     break;
                 
@@ -165,8 +192,10 @@ int main(int argc, char **argv)
         }
 
         // Do some rendering
+        SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
-
+        
+        // Moving sprite
         if(spriteTargetRect.x==(windowWidth-spriteWidth))
             spriteMoveX=-1;
         else if(spriteTargetRect.x==0)
@@ -186,6 +215,11 @@ int main(int argc, char **argv)
         drawText(10,10, fpsText, renderer);
         drawText(10, windowHeight-50, videoDriverText, renderer);
         drawText(10, windowHeight-80, renderDriverText, renderer);
+
+        // Draw our cursor
+        SDL_SetRenderDrawColor(renderer, 255, 48, 48, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawLine(renderer,cursorX-20,cursorY,cursorX+20,cursorY);
+        SDL_RenderDrawLine(renderer,cursorX, cursorY-20, cursorX, cursorY+20);
 
         // Make the buffer current
         SDL_RenderPresent(renderer);
