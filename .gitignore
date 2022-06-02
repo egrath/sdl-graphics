@@ -1,4 +1,6 @@
 .vscode
 *.o
 sdl-graphics
+sdl-graphics.exe
+imgui.ini
 

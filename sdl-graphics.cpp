@@ -1,18 +1,20 @@
-/*
- * SDL Test for showing the available drivers/renderers
- */
-
 #include <iostream>
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl.h"
+#include "imgui/imgui_impl_sdlrenderer.h"
+
 int fps = 0;
 char *fpsText = nullptr;
 const char *videoDriverText;
 const char *renderDriverText;
 TTF_Font *font;
+
+const char *applicationName = "SDL-Graphics";
 
 Uint32 TimerCallback(Uint32 interval, void *parameter)
 {
@@ -26,6 +28,7 @@ Uint32 TimerCallback(Uint32 interval, void *parameter)
 }
 
 // This is a expensive and unoptimized function!
+// CURRENTLY UNUSED AFTER INTEGRATING IMGUI
 void drawText(int x, int y, const char *text, SDL_Renderer *renderer)
 {    
     // Render information about how many FPS we have
@@ -59,10 +62,11 @@ int main(int argc, char **argv)
     SDL_GetCurrentDisplayMode(0,&displayMode);
 
     SDL_Window *window = nullptr;
+    SDL_WindowFlags windowFlags = (SDL_WindowFlags) (SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);    
     if(strcmp(SDL_GetCurrentVideoDriver(),"KMSDRM")==0)
-        window = SDL_CreateWindow("SDL-Graphics", 0, 0, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN);            
+        window = SDL_CreateWindow(applicationName, 0, 0, displayMode.w, displayMode.h, windowFlags);            
     else
-        window = SDL_CreateWindow("SDL-Graphics", 0, 0, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);    
+        window = SDL_CreateWindow(applicationName, 0, 0, 800, 600, windowFlags | SDL_WINDOW_RESIZABLE);    
 
     if(window==nullptr)
     {
@@ -81,8 +85,9 @@ int main(int argc, char **argv)
         std::cerr << SDL_GetError();
         return -1;
     }
-
-    SDL_ShowCursor(0);
+    
+    //SDL_ShowCursor(0);   
+    SDL_ShowCursor(1);
 
     // Get information about the available video drivers and rendererss
     std::cout << "available drivers (compiled in):" << std::endl;
@@ -110,6 +115,14 @@ int main(int argc, char **argv)
     renderDriverText = rendererInfo.name;
     std::cout << "    SDL_RENDER_DRIVER: " << renderDriverText << std::endl;    
     std::cout << std::flush;
+
+    // Initialize IMGUI
+    ImGui::CreateContext();
+    ImGui::StyleColorsClassic();
+    ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer_Init(renderer);    
+    ImGuiIO &io=ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF("RobotoMono-Regular.ttf", 18.0f);
 
     // Timer for updating the FPS display    
     SDL_AddTimer(1000, TimerCallback, nullptr);
@@ -145,6 +158,8 @@ int main(int argc, char **argv)
         SDL_Event event;
         while(SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
             switch(event.type)
             {
                 case SDL_MOUSEMOTION:
@@ -190,7 +205,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
-
+        
         // Do some rendering
         SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
@@ -211,15 +226,29 @@ int main(int argc, char **argv)
 
         SDL_RenderCopy(renderer, spriteTexture, nullptr, &spriteTargetRect);
 
-        // Draw info text
-        drawText(10,10, fpsText, renderer);
-        drawText(10, windowHeight-50, videoDriverText, renderer);
-        drawText(10, windowHeight-80, renderDriverText, renderer);
-
         // Draw our cursor
-        SDL_SetRenderDrawColor(renderer, 255, 48, 48, SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawLine(renderer,cursorX-20,cursorY,cursorX+20,cursorY);
-        SDL_RenderDrawLine(renderer,cursorX, cursorY-20, cursorX, cursorY+20);
+        //SDL_SetRenderDrawColor(renderer, 255, 48, 48, SDL_ALPHA_OPAQUE);
+        //SDL_RenderDrawLine(renderer,cursorX-20,cursorY,cursorX+20,cursorY);
+        //SDL_RenderDrawLine(renderer,cursorX, cursorY-20, cursorX, cursorY+20);
+
+        // Draw ImGui
+        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        // First Window
+        ImGui::Begin(applicationName);
+        if(fpsText!=nullptr && strlen(fpsText)>0)
+            ImGui::Text(fpsText);
+        if(ImGui::Button("Quit"))
+            run=false;
+        ImGui::End();
+
+        // Second Window
+        ImGui::ShowDemoWindow();
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 
         // Make the buffer current
         SDL_RenderPresent(renderer);

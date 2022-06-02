@@ -3,6 +3,7 @@ a simple tool to test out some SDL2 things, including:
 
 - rendering text
 - moving graphics
+- creating a UI with ImGui
 
 ![Screenshot](https://raw.githubusercontent.com/egrath/sdl-graphics/master/sdl-graphics-screenshot.png)
 
@@ -18,7 +19,7 @@ keyboard bindings:
 You can test out the different video and render drivers by prepending them to the command:
 
 ```
-SDL_VIDEODRIVER=x11 SDL_RENDER_DRIVER=software ./sdl-test
+SDL_VIDEODRIVER=x11 SDL_RENDER_DRIVER=software ./sdl-graphics
 ```
 
 When running on the console without X11/Wayland with the KMSDRM driver, make sure that your user belongs to the 'input' group by running as root:
