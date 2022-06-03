@@ -1,37 +1,57 @@
 #
-# Makefile for SDL Graphics Demo Linux version
+# Makefile for SDL Graphics Demo
+#
+# make TARGET=linux		(default)
+# make TARGET=mingw		==> build for Windows on Linux with MinGW toolchain
+# make TARGET=macintosh	==> build for Mac OS (on Mac OS)
 #
 
-CFLAGS = $(shell /usr/local/bin/sdl2-config --cflags) $(shell pkg-config --cflags SDL2_ttf SDL2_image) 
-LDFLAGS = $(shell /usr/local/bin/sdl2-config --libs) $(shell pkg-config --libs sdl2 SDL2_ttf SDL2_image) 
+EXE      = sdl-graphics
+TARGET   = linux
 
-sdl-graphics: sdl-graphics.o imgui.o imgui_draw.o imgui_tables.o imgui_widgets.o imgui_impl_sdl.o imgui_impl_sdlrenderer.o imgui_demo.o
-	g++ sdl-graphics.o imgui.o imgui_draw.o imgui_tables.o imgui_widgets.o imgui_impl_sdl.o imgui_impl_sdlrenderer.o imgui_demo.o $(LDFLAGS) -o sdl-graphics
+ifeq ($(TARGET),linux)
+CXX      = g++
+CXXFLAGS = $(shell /usr/local/bin/sdl2-config --cflags) $(shell pkg-config --cflags SDL2_ttf SDL2_image)
+LDFLAGS  = $(shell /usr/local/bin/sdl2-config --libs) $(shell pkg-config --libs sdl2 SDL2_ttf SDL2_image) 
+endif
 
-sdl-graphics.o: sdl-graphics.cpp
-	g++ -c $(CFLAGS) sdl-graphics.cpp -o sdl-graphics.o
+ifeq ($(TARGET),mingw)
+CXX      = x86_64-w64-mingw32-g++
+CXXFLAGS = -I/usr/x86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main 
+LDFLAGS  = -L/usr/x86_64-w64-mingw32/lib -lSDL2_ttf -lSDL2_image -lmingw32 -lSDL2main -lSDL2 -mwindows
+endif
 
-imgui.o: imgui/imgui.cpp
-	g++ -c $(CFLAGS) imgui/imgui.cpp -o imgui.o
+ifeq ($(TARGET),macintosh)
+FW                = /Library/Frameworks
+SDL_HEADERS       = $(FW)/SDL2.framework/Headers
+SDL_image_HEADERS = $(FW)/SDL2_image.framework/Headers
+SDL_ttf_HEADERS   = $(FW)/SDL2_ttf.framework/Headers
+CXX               = clang++
+CXXFLAGS          = -std=c++11 -F$(FW) -I$(SDL_HEADERS) -I$(SDL_image_HEADERS) -I$(SDL_ttf_HEADERS)
+LDFLAGS           =-F$(FW) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework SDL2 -framework SDL2_image -framework SDL2_ttf
+endif
 
-imgui_draw.o: imgui/imgui_draw.cpp
-	g++ -c $(CFLAGS) imgui/imgui_draw.cpp -o imgui_draw.o
+SOURCES  = sdl-graphics.cpp
+SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
+SOURCES += imgui/imgui_widgets.cpp imgui/imgui_impl_sdl.cpp imgui/imgui_impl_sdlrenderer.cpp imgui/imgui_demo.cpp
+OBJS     = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 
-imgui_tables.o: imgui/imgui_tables.cpp
-	g++ -c $(CFLAGS) imgui/imgui_tables.cpp -o imgui_tables.o
+.DEFAULT_GOAL := all
 
-imgui_widgets.o: imgui/imgui_widgets.cpp
-	g++ -c $(CFLAGS) imgui/imgui_widgets.cpp -o imgui_widgets.o
+# implicit rules
+%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-imgui_impl_sdl.o: imgui/imgui_impl_sdl.cpp
-	g++ -c $(CFLAGS) imgui/imgui_impl_sdl.cpp -o imgui_impl_sdl.o
+%.o:imgui/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-imgui_impl_sdlrenderer.o: imgui/imgui_impl_sdlrenderer.cpp
-	g++ -c $(CFLAGS) imgui/imgui_impl_sdlrenderer.cpp -o imgui_impl_sdlrenderer.o
+# build rules
+all: $(EXE)
+	@echo $(TARGET) build complete
 
-imgui_demo.o: imgui/imgui_demo.cpp
-	g++ -c $(CFLAGS) imgui/imgui_demo.cpp -o imgui_demo.o
+$(EXE): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) -o $@ 
 
-clean: 
-		rm sdl-graphics *.o
+clean:
+	-rm -f $(EXE) $(OBJS)
 

@@ -244,14 +244,15 @@ int main(int argc, char **argv)
 
         // First Window
         ImGui::Begin(applicationName);
-        if(fpsText!=nullptr && strlen(fpsText)>0)
-            ImGui::Text(fpsText);
-        if(ImGui::Button("Quit"))
-            run=false;
+            if(fpsText!=nullptr && strlen(fpsText)>0)
+                ImGui::Text(fpsText);
+            if(ImGui::Button("Quit"))
+                run=false;
+            ImGui::SetWindowSize(ImVec2(160,120));
         ImGui::End();
 
         // Second Window
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
 
         ImGui::Render();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
