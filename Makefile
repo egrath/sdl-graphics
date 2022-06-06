@@ -6,6 +6,7 @@
 # make TARGET=macintosh	==> build for Mac OS (on Mac OS)
 #
 
+BUILDDIR = build
 EXE      = sdl-graphics
 TARGET   = linux
 
@@ -34,24 +35,28 @@ endif
 SOURCES  = sdl-graphics.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
 SOURCES += imgui/imgui_widgets.cpp imgui/imgui_impl_sdl.cpp imgui/imgui_impl_sdlrenderer.cpp imgui/imgui_demo.cpp
-OBJS     = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+OBJS     = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 
 .DEFAULT_GOAL := all
 
 # implicit rules
-%.o:%.cpp
+$(BUILDDIR)/%.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:imgui/%.cpp
+$(BUILDDIR)/%.o:imgui/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 # build rules
-all: $(EXE)
+all: $(BUILDDIR)/$(EXE) assets
 	@echo $(TARGET) build complete
 
-$(EXE): $(OBJS)
+assets: data/sprite.png data/RobotoMono-Regular.ttf
+	@echo copying data ...
+	@cp $^ $(BUILDDIR)/
+
+$(BUILDDIR)/$(EXE): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) -o $@ 
 
 clean:
-	-rm -f $(EXE) $(OBJS)
-
+	-rm -Rf $(BUILDDIR)
+	-mkdir $(BUILDDIR)

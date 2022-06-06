@@ -245,7 +245,7 @@ int main(int argc, char **argv)
         // First Window
         ImGui::Begin(applicationName);
             if(fpsText!=nullptr && strlen(fpsText)>0)
-                ImGui::Text(fpsText);
+                ImGui::Text("%s",fpsText);
             if(ImGui::Button("Quit"))
                 run=false;
             ImGui::SetWindowSize(ImVec2(160,120));
