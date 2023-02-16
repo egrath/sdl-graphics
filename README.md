@@ -7,6 +7,19 @@ a simple tool to test out some SDL2 things, including:
 
 ![Screenshot](https://raw.githubusercontent.com/egrath/sdl-graphics/master/sdl-graphics-screenshot.png)
 
+### Building
+Prerequisites:
+- SDL2
+- SDL_image
+- SDL_ttf
+If the prerequisites are satisfied, run:
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
 ### Usage
 
 keyboard bindings:
