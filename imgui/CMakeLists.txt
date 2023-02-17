@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.13)
 message("working on: ${CMAKE_CURRENT_LIST_DIR}")
 
 find_package(SDL2 REQUIRED)
-find_package(SDL_image REQUIRED)
-find_package(SDL_ttf REQUIRED)
 
 # print some additional information about the SDL libraries
 if(${SDL2_FOUND})
@@ -22,5 +20,5 @@ add_library(imgui STATIC
 )
 
 target_include_directories(imgui PUBLIC ${SDL2_INCLUDE_DIRS})
-target_link_libraries(imgui SDL2 SDL_image SDL_ttf)
+target_link_libraries(imgui PRIVATE SDL2)
 

@@ -1,12 +1,19 @@
 cmake_minimum_required(VERSION 3.13)
-
 project(sdl-graphics)
+
+# append the cmake directory to the path where cmake looks for modules, as there
+# we have stored FindSDL2_image and FindSDL2_ttf
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+message("CMAKE_MODULE_PATH=[${CMAKE_MODULE_PATH}]")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/imgui)
 
+# required libraries, SDL2 itself provides the necessary Find-module out
+# of the box, the later two are covered by ones provided within the 
+# above mentioned cmake directory
 find_package(SDL2 REQUIRED)
-find_package(SDL_image REQUIRED)
-find_package(SDL_ttf REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 
 add_executable(${CMAKE_PROJECT_NAME} sdl-graphics.cpp)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC SDL2 SDL2_image SDL2_ttf imgui)
