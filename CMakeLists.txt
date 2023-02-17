@@ -15,6 +15,12 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
+# on Windows, we need to pass this preprocessor definition, else
+# the linker complains because we haven't defined WinMain but main
+if(MINGW)
+	add_definitions("-DSDL_MAIN_HANDLED")
+endif()
+
 add_executable(${CMAKE_PROJECT_NAME} sdl-graphics.cpp)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC SDL2 SDL2_image SDL2_ttf imgui)
 target_link_libraries(${CMAKE_PROJECT_NAME} SDL2 SDL2_image SDL2_ttf imgui)
