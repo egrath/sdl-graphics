@@ -73,6 +73,9 @@ int main(int argc, char **argv)
         std::cerr << SDL_GetError();
         return -1;
     }    
+    
+    // Set Window size to something reasonable
+    SDL_SetWindowPosition(window, 100, 100);
 
     // Get size of created window
     int windowWidth, windowHeight;
