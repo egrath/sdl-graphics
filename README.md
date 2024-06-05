@@ -20,6 +20,18 @@ cmake ..
 cmake --build .
 ```
 
+## Special notes for users of brew on Macintosh:
+```
+mkdir build
+cd build
+
+export CFLAGS="-I/opt/homebrew/include"
+export CXXFLAGS=$CFLAGS
+export LDFLAGS="-L/opt/homebrew/lib"
+
+cmake -DCMAKE_C_COMPILER=/opt/homebrew/bin/gcc-14 -DCMAKE_CXX_COMPILER=/opt/homebrew/bin/g++-14 ..
+```
+
 ### Usage
 
 keyboard bindings:
